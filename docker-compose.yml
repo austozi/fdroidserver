@@ -1,0 +1,20 @@
+version: "2.4"
+services:
+  fdroidserver:
+    image: austozi/fdroidserver:latest
+    container_name: fdroidserver
+    restart: unless-stopped
+    entrypoint: fdroid update -c
+    user: "1000:1000"
+    environment:
+      TZ: Europe/London
+    volumes:
+      - ./fdroid:/fdroid
+    networks:
+      - backend
+networks:
+  backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.80.0/29
