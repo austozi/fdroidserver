@@ -1,20 +1,35 @@
-version: "2.4"
 services:
   fdroidserver:
-    image: austozi/fdroidserver:latest
+    image: docker.io/austozi/fdroidserver:latest
     container_name: fdroidserver
     restart: unless-stopped
-    entrypoint: fdroid update -c
     user: "1000:1000"
     environment:
+      TZ: Europe/London      
+      FDROID_REPO_URL: https://localhost/repo # change me
+      FDROID_REPO_NAME: F-Droid Repository
+      FDROID_REPO_ICON: fdroid.png
+      FDROID_REPO_DESCRIPTION: A personal app repository for Android devices.
+      FDROID_UPDATE_INTERVAL: 12h
+    volumes:
+      - ./config/fdroid:/fdroid
+      - ./config/update-scripts:/update-scripts:ro
+  nginx:
+    image: ghcr.io/linuxserver/nginx:latest
+    container_name: fdroid
+    restart: unless-stopped
+    environment:
+      PUID: 1000
+      PGID: 1000
       TZ: Europe/London
     volumes:
-      - ./fdroid:/fdroid
+      - ./config:/config
+      - ./config/fdroid/repo:/config/www/repo:ro
+    expose:
+      - 80
+    depends_on:
+      - fdroidserver
     networks:
-      - backend
+      - frontend
 networks:
-  backend:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.16.80.0/29
+  frontend:
